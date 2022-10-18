@@ -3041,8 +3041,88 @@ function createPropSymbols(data, map, attributes){
 
 createPropSymbols(summaryList, map, attributes);
 
+function updatePropSymbols(map, attribute){
+	map.eachLayer(function(layer){
+		if (layer.feature && layer.feature.properties[attribute]){
+			//update the layer style and popup
+			 if (layer.feature && layer.feature.properties[attribute]){
+				//access feature properties
+				var props = layer.feature.properties;
+
+				//update each feature's radius based on new attribute values
+				var radius = calcPropRadius(props[attribute], attribute);
+				layer.setRadius(radius);
+				
+				
+				if (attribute == "Total"){
+					if (props[attribute] >=200){
+						layer.setStyle({fillColor: "#ff0008"});
+					}
+					else if (props[attribute] >=100) {
+						layer.setStyle({fillColor: "#ff7800"});
+					};
+				}
+				else {
+					if (props[attribute] >=50){
+						layer.setStyle({fillColor: "#ff0008"});
+					}
+					else if (props[attribute] >=20) {
+						layer.setStyle({fillColor: "#ff7800"});
+					};
+				}
+
+				//build popup content string
+				var popupContent = "<p><b>From:</b> " + props.From + "</p><p><b>" + "Date:</b> " + attribute + "</p><p><b>" + "Number of cases:</b> " + props[attribute] + "</p>";
+
+				//replace the layer popup
+				layer.bindPopup(popupContent, {
+					offset: new L.Point(0,-radius)
+				});
+
+				//event listeners to open popup on hover
+				layer.on({
+					mouseover: function(){
+						this.openPopup();
+					},
+					mouseout: function(){
+						this.closePopup();
+					}
+				});
+			};
+		};
+	});
+}
+
 //Step 1: Create new sequence controls
 function createSequenceControls(map, attributes){
+	var SequenceControl = L.Control.extend({
+        options: {
+            position: 'bottomleft'
+        },
+		
+		onAdd: function (map) {
+            // create the control container div with a particular class name
+            var container = L.DomUtil.create('div', 'sequence-control-container');
+
+            //create range input element (slider)
+            $(container).append('<input class="range-slider" type="range">');
+			
+			 //add skip buttons
+            $(container).append('<button class="skip" id="reverse" title="Reverse"><img src="assets/reverse.png" height="25px"></button>');
+            $(container).append('<button class="skip" id="forward" title="Forward"><img src="assets/forward.png" height="25px"></button>');
+			
+			//kill any mouse event listeners on the map
+            $(container).on('mousedown dblclick', function(e){
+                L.DomEvent.stopPropagation(e);
+            });
+			
+            return container;
+        }
+    });
+
+    map.addControl(new SequenceControl());
+	
+	/*
     //create range input element (slider)
     $('#panel').append('<input class="range-slider" type="range">');
 	
@@ -3056,16 +3136,24 @@ function createSequenceControls(map, attributes){
 	
     $('#panel').append('<button class="skip" id="reverse">Reverse</button>');
     $('#panel').append('<button class="skip" id="forward">Skip</button>');
+
+	$('#reverse').html('<img src="assets/reverse.png" height="25px">');
+    $('#forward').html('<img src="assets/forward.png" height="25px">');*/
 	
-	$('#reverse').html('<img src="assets/reverse.png" height="30px">');
-    $('#forward').html('<img src="assets/forward.png" height="30px">');
+	//set slider attributes
+	$('.range-slider').attr({
+		max: 14,
+		min: 0,
+		value: 0,
+		step: 1
+	});	
 	
-	    //Step 5: click listener for buttons
+	
+	//Step 5: click listener for buttons
     $('.skip').click(function(){
         //get the old index value
         var index = $('.range-slider').val();
 		//console.log(index);
-
 		
 		//Step 6: increment or decrement depending on button clicked
         if ($(this).attr('id') == 'forward'){
@@ -3079,70 +3167,168 @@ function createSequenceControls(map, attributes){
         };
 
         //Step 8: update slider
-        $('.range-slider').val(index);
-		
-		
-		function updatePropSymbols(map, attribute){
-			map.eachLayer(function(layer){
-				if (layer.feature && layer.feature.properties[attribute]){
-					//update the layer style and popup
-					 if (layer.feature && layer.feature.properties[attribute]){
-						//access feature properties
-						var props = layer.feature.properties;
-
-						//update each feature's radius based on new attribute values
-						var radius = calcPropRadius(props[attribute], attribute);
-						layer.setRadius(radius);
-						
-						
-						if (attribute == "Total"){
-							if (props[attribute] >=200){
-								layer.setStyle({fillColor: "#ff0008"});
-							}
-							else if (props[attribute] >=100) {
-								layer.setStyle({fillColor: "#ff7800"});
-							};
-						}
-						else {
-							if (props[attribute] >=50){
-								layer.setStyle({fillColor: "#ff0008"});
-							}
-							else if (props[attribute] >=20) {
-								layer.setStyle({fillColor: "#ff7800"});
-							};
-						}
-
-						//build popup content string
-						var popupContent = "<p><b>From:</b> " + props.From + "</p><p><b>" + "Date:</b> " + attribute + "</p><p><b>" + "Number of cases:</b> " + props[attribute] + "</p>";
-
-						//replace the layer popup
-						layer.bindPopup(popupContent, {
-							offset: new L.Point(0,-radius)
-						});
-
-						//event listeners to open popup on hover
-						layer.on({
-							mouseover: function(){
-								this.openPopup();
-							},
-							mouseout: function(){
-								this.closePopup();
-							}
-						});
-					};
-				};
-			});
-		}
+        $('.range-slider').val(index);		
 			
 		updatePropSymbols(map, attributes[index]);
+		updateLegend(map, attributes[index]);
     });
 
     //Step 5: input listener for slider
     $('.range-slider').on('input', function(){
         //Step 6: get the new index value
         var index = $(this).val();
+		console.log(index);
+		
+		//Step 6: increment or decrement depending on button clicked
+        if ($(this).attr('id') == 'forward'){
+            index++;
+            //Step 7: if past the last attribute, wrap around to first attribute
+            index = index > 14 ? 14 : index;
+        } else if ($(this).attr('id') == 'reverse'){
+            index--;
+            //Step 7: if past the first attribute, wrap around to last attribute
+            index = index < 0 ? 0 : index;
+        };
+		
+		updatePropSymbols(map, attributes[index]);
+		updateLegend(map, attributes[index]);
+
     });
 	
 };
 
 createSequenceControls(map, attributes);
+
+//Calculate the max, mean, and min values for a given attribute
+function getCircleValues(map, attribute){
+    //start with min at highest possible and max at lowest possible number
+    var min = Infinity,
+        max = -Infinity;
+
+    map.eachLayer(function(layer){
+        //get the attribute value
+        if (layer.feature){
+            var attributeValue = Number(layer.feature.properties[attribute]);
+
+            //test for min
+            if (attributeValue < min && attributeValue!=0){
+                min = attributeValue;
+            };
+
+            //test for max
+            if (attributeValue > max){
+                max = attributeValue;
+            };
+        };
+    });
+
+    //set mean
+    var mean = Math.trunc((max + min) / 2);
+
+    //return values as an object
+    return {
+        max: max,
+        mean: mean,
+        min: min
+    };
+};
+
+//Update the legend with new attribute
+function updateLegend(map, attribute){
+    //create content for legend
+    var content = "<b>Import cases in " + attribute + "</b>";
+
+    //replace legend content
+    $('#temporal-legend').html(content);
+	
+    //get the max, mean, and min values as an object
+    var circleValues = getCircleValues(map, attribute);
+	
+	for (var key in circleValues){
+        //get the radius
+        var radius = calcPropRadius(circleValues[key], attribute);
+
+        $('#'+key).attr({
+            cy: 40 - radius,
+            r: radius
+        });
+
+        //Step 4: add legend text
+        $('#'+key+'-text').text(Math.round(circleValues[key]*100)/100 + " cases");
+    };
+	
+	if(attribute == "Total"){
+		$('#orange-circle-text').html(">=100");
+		$('#red-circle-text').html(">=200");
+	}
+	else{
+		$('#orange-circle-text').html(">=20");
+		$('#red-circle-text').html(">=50");
+	}
+};
+
+function createLegend(map, attributes){
+    var LegendControl = L.Control.extend({
+        options: {
+            position: 'bottomright'
+        },
+
+        onAdd: function (map) {
+            // create the control container with a particular class name
+            var container = L.DomUtil.create('div', 'legend-control-container');
+
+            //add temporal legend div to container
+            $(container).append('<div id="temporal-legend">')
+
+            //Step 1: start attribute legend svg string
+			var svg = '<svg id="attribute-legend" width="180px" height="100px">';
+
+			/*//array of circle names to base loop on
+			var circles = ["max", "mean", "min"];*/
+
+			//Step 2: loop to add each circle and text to svg string
+			var circles = {
+				max: 20,
+				mean: 40,
+				min: 60
+			};
+
+			//loop to add each circle and text to svg string
+			for (var circle in circles){
+				//circle string
+				svg += '<circle class="legend-circle" id="' + circle + '" fill="#fff800" fill-opacity="0.8" stroke="#000000" cx="45"/>';
+
+				//text string
+				svg += '<text id="' + circle + '-text" x="85" y="' + circles[circle] + '"></text>';
+			};
+			
+			// legend for colors			
+			svg += '<circle class="legend-circle" id="red-circle" fill="#fff800" fill-opacity="0.8" stroke="#000000" cx="15" cy="85" r="10"/>';
+
+			svg += '<text id="yellow-circle-text" x="30" y="90"> >0</text>';
+			
+			svg += '<circle class="legend-circle" id="red-circle" fill="#ff7800" fill-opacity="0.8" stroke="#000000" cx="65" cy="85" r="10"/>';
+
+			svg += '<text id="orange-circle-text" x="80" y="90"> >=20</text>';
+			
+			svg += '<circle class="legend-circle" id="red-circle" fill="#ff0008" fill-opacity="0.8" stroke="#000000" cx="130" cy="85" r="10"/>';
+
+			svg += '<text id="red-circle-text" x="145" y="90"> >=50</text>';
+			
+
+			//close svg string
+			svg += "</svg>";
+			
+            //add attribute legend svg to container
+            $(container).append(svg);
+
+            return container;
+        }
+    });
+
+    map.addControl(new LegendControl());
+
+    updateLegend(map, attributes[0]);
+};
+
+createLegend(map, attributes);
