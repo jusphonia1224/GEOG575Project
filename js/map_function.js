@@ -156,7 +156,7 @@ var rbwList ={
         "Country": "South Korea",
         "City": "Seoul",
         "Address (Local)": "서울시 광진구 자양로 129, RBW타워 1층",
-        "Address (English)": "",
+        "Address (English)": "1/F, RBW Tower, 129 Jayang-ro, Gwangjin-gu, Seoul, Korea",
         "Events": "",
         "Date": "From 20220913",
         "Remarks": "<a href='https://www.instagram.com/or_overtherainbow/' target='_blank'>https://www.instagram.com/or_overtherainbow/</a>"
