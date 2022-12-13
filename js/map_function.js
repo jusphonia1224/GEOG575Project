@@ -151,7 +151,7 @@ var rbwList ={
       "properties": {
         "number": 4,
         "Place Name": "오버더레인보우 <br>  Over The Rainbow Lounge",
-        "icon": "assets/rbw/lounge.jpeg",
+        "icon": "assets/RBW/lounge.jpeg",
         "Type": "RBW",
         "Country": "South Korea",
         "City": "Seoul",
@@ -300,7 +300,6 @@ var poiLayers = L.layerGroup([
 	])
 	.addTo(map);
 	
-
 	
 L.control.search({
 		layer: poiLayers,
