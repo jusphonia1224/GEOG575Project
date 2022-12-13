@@ -2,12 +2,12 @@
 * Map Section
 */
 var map = L.map('map', {
-    center: [37.996163, 12.187496],
-    zoom: 2
+    center: [37.517345, 127.126313],
+    zoom: 10
 });
 	
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 10,
+    maxZoom: 20,
 	minZoom: 2,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);

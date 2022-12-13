@@ -7,8 +7,10 @@
 #panel {
     padding: 20px;
     display: inline-block;
-    vertical-align: top;
+    vertical-align: bottom;
     line-height: 30px;
+	position: absolute;
+	bottom: -1550px;
 }
 
 .sequence-control-container {
@@ -34,7 +36,7 @@
 }
 
 .legend-control-container {
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255,255,255,0.6);
     padding: 5px;
     text-align: center;
     border: solid gray 1px;
@@ -67,10 +69,10 @@ h6 {
 }
 
 table, th, tr, td {
-  border: 1px solid;
+  border: 5px ;
   padding-left: 15px;
   padding-right: 15px;
-  border-color: #444444;
+  border-color: #4F7849;
   width: 7%;
 }
 
@@ -132,7 +134,7 @@ table, th, tr, td {
 -------*/
 /*Desktop*/
 .navbar {
-  padding: 0;
+  padding: 0;  
 }
 
 .navbar tr,td {
