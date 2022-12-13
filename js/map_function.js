@@ -151,7 +151,7 @@ var rbwList ={
       "properties": {
         "number": 4,
         "Place Name": "오버더레인보우 <br>  Over The Rainbow Lounge",
-        "icon": "assets/RBW/lounge.jpeg",
+        "icon": "assets/RBW/lounge.png",
         "Type": "RBW",
         "Country": "South Korea",
         "City": "Seoul",
